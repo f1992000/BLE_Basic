@@ -85,6 +85,12 @@ func getGravityVectorCharacteristicUUID() -> CBUUID {
 }
 
 
+// UART UUIDs
+let kBLEService_UUID = CBUUID(string: "6e400001-b5a3-f393-e0a9-e50e24dcca9e")
+let kBLE_Characteristic_uuid_Tx = CBUUID(string: "6e400002-b5a3-f393-e0a9-e50e24dcca9e")
+let kBLE_Characteristic_uuid_Rx = CBUUID(string: "6e400003-b5a3-f393-e0a9-e50e24dcca9e")
+
+
 // Returns All Services UUIDs
 func getAllServices() -> [CBUUID] {
     return [

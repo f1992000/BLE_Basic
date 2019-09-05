@@ -12,6 +12,7 @@ import CoreBluetooth
 var MacCentralManager: CBCentralManager!
 var TargetPeripheral: CBPeripheral!
 var TargetCharacteristic: CBCharacteristic!
+var TxCharacteristic: CBCharacteristic?
 var TargetService: CBService!
 
 class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDelegate {
@@ -89,7 +90,12 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
 
         for characteristic in characteristics {
             print(characteristic)
-
+            
+            // CBCharacteristicWrite
+            if characteristic.uuid.isEqual(kBLE_Characteristic_uuid_Tx){
+                TxCharacteristic = characteristic
+            }
+            
 //            if characteristic.properties.contains(.read) {
 //                print("\(characteristic.uuid): properties contains .read")  //找到read方式的characteristics并读取
 //                peripheral.readValue(for: characteristic)
@@ -114,14 +120,17 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
         case getTemperatureCharacteristicUUID():
             guard let characteristicData = characteristic.value else { return }
             print(("Temperature_1: \(characteristicData[0])"))
-
+            temperatureValue.text = String("Temperature: \(characteristicData[0]).\(characteristicData[1])°C")
+            
         case getPressureCharacteristicUUID():
             guard let characteristicData = characteristic.value else { return }
             print(("Pressure____2: \(characteristicData[0])"))
+            pressureValue.text = String("Pressure: \(characteristicData[0])")
             
         case getHumidityCharacteristicUUID():
             guard let characteristicData = characteristic.value else { return }
             print(("Humidity____3: \(characteristicData[0])"))
+            humidityValue.text = String("Humidity: \(characteristicData[0])%")
             
         case getAirQualityCharacteristicUUID():
             guard let characteristicData = characteristic.value else { return }
@@ -130,17 +139,37 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
         case getLightIntensityCharacteristicUUID():
             guard let characteristicData = characteristic.value else { return }
             print(("Color_______5: \(characteristicData[0])"))
-        
-//        case getEnvironmentConfigurationCharacteristicUUID():
-//            guard let characteristicData = characteristic.value else { return }
-//            print(("Environment_6: \(characteristicData[0])"))
             
         case getRotationMatrixCharacteristicUUID():
             guard let characteristicData = characteristic.value else { return }
             print(("RotationMatrix_____8: \(characteristicData[0])"))
+        
+        case kBLE_Characteristic_uuid_Rx:
+            guard let characteristicData = characteristic.value else { return }
+            let characteristicData2 = NSString(data: characteristicData, encoding: String.Encoding.utf8.rawValue)
+            writeValue(data: "QQ")
+            print("Rx_______________0: \(String(describing: characteristicData2!))")
             
         default:
             print("Unhandled Characteristic UUID: \(characteristic.uuid)")
         }
     }
+    
+    @IBOutlet weak var temperatureValue: UILabel!
+    
+    @IBOutlet weak var pressureValue: UILabel!
+    
+    @IBOutlet weak var humidityValue: UILabel!
+
+    // Write functions
+    func writeValue(data: String){
+        let valueString = (data as NSString).data(using: String.Encoding.utf8.rawValue)
+        //change the "data" to valueString
+        if let blePeripheral = TargetPeripheral{
+            if let txCharacteristic = TxCharacteristic {
+                blePeripheral.writeValue(valueString!, for: txCharacteristic, type: CBCharacteristicWriteType.withResponse)
+            }
+        }
+    }
+    
 }
